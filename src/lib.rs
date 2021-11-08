@@ -7,12 +7,12 @@ const TEST: u32 = 1;
 
 // NOTE: only accept lowercase hex address
 fn encode(mut cx: FunctionContext) -> JsResult<JsString> {
-    let hex_handle = cx.argument::<JsString>(0)?; // TODO use buffer as first argument
+    let hex_handle = cx.argument::<JsString>(0)?; // TODO use buffer to receive the first argument
     let net_id_handle = cx.argument::<JsNumber>(1)?;
     let verbose_handle = cx.argument::<JsBoolean>(2).unwrap_or(cx.boolean(false));
 
     let hex_address: String = hex_handle.value(&mut cx) as String;
-    let hex_str = hex_address.as_str().trim_start_matches("0x"); // TODO to lowercase
+    let hex_str = hex_address.as_str().trim_start_matches("0x"); // TODO convert to lowercase before trimming
     let raw = hex::decode(hex_str).map_err(|_err| Throw)?;
 
     let net_id: u32 = net_id_handle.value(&mut cx) as u32;
@@ -30,24 +30,25 @@ fn encode(mut cx: FunctionContext) -> JsResult<JsString> {
         EncodingOptions::Simple
     };
 
-    match cfx_addr_encode(&raw, network, option) {
-        Ok(base32_address) => Ok(cx.string(base32_address.as_str())),
-        Err(_) => Err(Throw),
-    }
+    let base32_address = cfx_addr_encode(&raw, network, option).map_err(|_err| Throw)?;
+    Ok(cx.string(base32_address.as_str()))
 }
 
 fn decode(mut cx: FunctionContext) -> JsResult<JsObject> {
     let base32_handle = cx.argument::<JsString>(0)?;
     let base32: String = base32_handle.value(&mut cx) as String;
+
     let decoded = cfx_addr_decode(base32.as_str()).map_err(|_err| Throw)?;
     if decoded.hex_address.is_none() {
         return Err(Throw);
     }
+
     let net_id = match decoded.network {
         Network::Main => MAIN,
         Network::Test => TEST,
         Network::Id(id) => id as u32,
     };
+
     let address_type = if decoded.hex_address.unwrap().is_zero() {
         "null"
     } else {
@@ -58,7 +59,9 @@ fn decode(mut cx: FunctionContext) -> JsResult<JsObject> {
             _ => "invalid",
         }
     };
+
     let hex_address = format!("0x{}", hex::encode(decoded.parsed_address_bytes));
+
     let obj = cx.empty_object();
     let hex_address_handle = cx.string(hex_address);
     let net_id_handle = cx.number(net_id);
@@ -66,6 +69,7 @@ fn decode(mut cx: FunctionContext) -> JsResult<JsObject> {
     obj.set(&mut cx, "hexAddress", hex_address_handle)?;
     obj.set(&mut cx, "netId", net_id_handle)?;
     obj.set(&mut cx, "type", address_type_handle)?;
+
     Ok(obj)
 }
 
