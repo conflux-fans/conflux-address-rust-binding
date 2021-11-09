@@ -48,7 +48,7 @@ encode('0x1386b4185a223ef49592233b69291bbe5a80c527', 1029, true)
 
 * `address(string)`: hex40 address
 * `netId(number)`: network id
-* `verbose(bool)`: whether encode as verbose
+* [`verbose(bool)`]: whether encode as verbose
 
 #### return
 
@@ -62,7 +62,7 @@ encode('0x1386b4185a223ef49592233b69291bbe5a80c527', 1029, true)
 
 #### return
 
-* `hexAddress(string)`: hex40 address
+* `hexAddress(string)`: buffer
 * `netId(number)`: network id
 * `type(string)`: address type
 

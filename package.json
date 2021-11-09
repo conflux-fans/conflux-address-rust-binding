@@ -1,6 +1,6 @@
 {
   "name": "@conflux-dev/conflux-address-rust",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "description": "This is the Node.js binding to conflux-address-rust",
   "main": "index.node",
   "scripts": {
