@@ -11,7 +11,7 @@ Installing conflux-address-rust requires a [supported version of Node and Rust](
 You can install the project with npm. In the project directory, run:
 
 ```sh
-$ npm install conflux-adress-rust
+$ npm install @conflux-dev/conflux-address-rust
 ```
 
 This fully installs the project, including installing any dependencies and running the build.
@@ -21,7 +21,7 @@ This fully installs the project, including installing any dependencies and runni
 After installing, you can explore its exports at the Node REPL:
 
 ```js
-const {encode, decode} = require('conflux-address-rust');
+const {encode, decode} = require('@conflux-dev/conflux-address-rust');
 
 decode('cfxtest:aak2rra2njvd77ezwjvx04kkds9fzagfe6d5r8e957');
 /* {
