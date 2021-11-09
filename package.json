@@ -1,5 +1,5 @@
 {
-  "name": "conflux-address-rust-binding",
+  "name": "@conflux-dev/conflux-address-rust",
   "version": "0.1.0",
   "description": "This is the Node.js binding to conflux-address-rust",
   "main": "index.node",
