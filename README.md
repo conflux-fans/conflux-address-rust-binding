@@ -18,7 +18,7 @@ This fully installs the project, including installing any dependencies and runni
 
 ## How to use
 
-After installing, you can explore its exports at the Node REPL:
+After installing, you can explore its exports as below:
 
 ```js
 const {encode, decode} = require('@conflux-dev/conflux-address-rust');
