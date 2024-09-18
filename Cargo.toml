@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
 napi = { version = "2.12.2", default-features = false, features = ["napi4"] }
 napi-derive = "2.12.2"
+cfx_addr = { git = "https://github.com/Conflux-Chain/conflux-rust.git", tag = "v2.4.0", package = "cfx-addr" }
 
 [build-dependencies]
 napi-build = "2.0.1"
