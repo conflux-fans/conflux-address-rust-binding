@@ -1,0 +1,22 @@
+{
+  "name": "@conflux-dev/conflux-address-rust-darwin-arm64",
+  "version": "0.0.0",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "conflux-address-rust.darwin-arm64.node",
+  "files": [
+    "conflux-address-rust.darwin-arm64.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

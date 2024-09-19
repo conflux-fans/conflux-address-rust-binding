@@ -1,121 +1,111 @@
-use cfx_addr::*;
-use cfx_addr::errors::EncodingError;
-use neon::prelude::*;
-use neon::result::Throw;
+#![deny(clippy::all)]
 
-const MAIN: u32 = 1029;
-const TEST: u32 = 1;
+#[macro_use]
+extern crate napi_derive;
 
-/*
-TODO
-1. Use buffer to receive the first argument
-2. Add unit test and benchmark
-*/
-// NOTE: only accept lowercase hex address
-fn encode(mut cx: FunctionContext) -> JsResult<JsString> {
-    let hex_handle = cx.argument::<JsString>(0)?;
-    let net_id_handle = cx.argument::<JsNumber>(1)?;
-    let verbose_handle = cx.argument_opt(2);
+use cfx_addr::{
+  self, cfx_addr_decode, cfx_addr_encode,
+  errors::{EncodingError, OptionError},
+  DecodingError, EncodingOptions, Network,
+};
+use napi::Error;
 
-    // prepare hex address
-    let hex_address: String = hex_handle.value(&mut cx);
-    let hex_str = hex_address.as_str().trim_start_matches("0x");
-    let raw = hex::decode(hex_str).map_err(|_err| Throw)?;
-    // prepare networkId
-    let net_id: u32 = net_id_handle.value(&mut cx) as u32;
-    let network: Network = match net_id {
-        TEST => Network::Test,
-        MAIN => Network::Main,
-        _ => Network::Id(net_id as u64),
-    };
-    // prepare option
-    let verbose = if let Some(v) = verbose_handle {
-        if !v.is_a::<JsBoolean, FunctionContext>(&mut cx) {
-            let _e = cx.throw_error::<&str, JsError>("The 3rd argument (verbose) should be a boolean");
-            return Err(Throw);
-        };
-        v.downcast::<JsBoolean, FunctionContext>(&mut cx)
-            .map_err(|_err| Throw)?
-            .value(&mut cx) as bool
-    } else {
-        false
-    };
-    let option = if verbose {
-        EncodingOptions::QrCode
-    } else {
-        EncodingOptions::Simple
-    };
+#[napi]
+pub const MAIN_NET_ID: u32 = 1029;
+#[napi]
+pub const TEST_NET_ID: u32 = 1;
 
-    match cfx_addr_encode(&raw, network, option) {
-        Ok(base32_address) => Ok(cx.string(base32_address.as_str())),
-        Err(err) => {
-            let error_msg = match err {
-                EncodingError::InvalidAddressType(t) => format!("Invalid address type: {}", t),
-                EncodingError::InvalidLength(l) => format!("Invalid length: {}", l),
-                EncodingError::InvalidNetworkId(net_id) => format!("Invalid netId: {}", net_id),
-            };
-            let _e = cx.throw_error::<&str, JsError>(error_msg.as_str());
-            Err(Throw)
-        }
-    }
+#[napi]
+fn encode(hex_address: String, net_id: u32, verbose: bool) -> Result<String, napi::Error> {
+  let network_id = match net_id {
+    MAIN_NET_ID => Network::Main,
+    TEST_NET_ID => Network::Test,
+    _ => Network::Id(net_id as u64),
+  };
+
+  let hex_str = hex_address.as_str().trim_start_matches("0x");
+
+  let encoding_options = if verbose {
+    EncodingOptions::QrCode
+  } else {
+    EncodingOptions::Simple
+  };
+
+  let raw_addr =
+    hex::decode(hex_str).map_err(|_| Error::from_reason("Error: encode error: invalid hex string"))?;
+
+  let base32_address =
+    cfx_addr_encode(&raw_addr, network_id, encoding_options).map_err(|e| match e {
+      EncodingError::InvalidLength(_) => Error::from_reason("Error: encode error: invalid length"),
+      EncodingError::InvalidAddressType(_) => {
+        Error::from_reason("Error: encode error: invalid address type")
+      }
+      EncodingError::InvalidNetworkId(id) => {
+        Error::from_reason(format!("Error: encode error: invalid network id: {}", id))
+      }
+    })?;
+
+  Ok(base32_address)
 }
 
-fn decode(mut cx: FunctionContext) -> JsResult<JsObject> {
-    let base32: String = cx.argument::<JsString>(0)?.value(&mut cx);
-    // decode and check result
-    let decode_res = cfx_addr_decode(base32.as_str());
-    if let Err(err) = decode_res {
-        let error_msg = match err {
-            DecodingError::InvalidLength(_) => "InvalidLength",
-            DecodingError::NoPrefix => "NoPrefix",
-            DecodingError::InvalidPrefix(_) => "InvalidPrefix",
-            DecodingError::InvalidOption(_) => "InvalidOption",
-            DecodingError::ChecksumFailed(_) => "ChecksumFailed",
-            DecodingError::InvalidChar(_) => "InvalidChar",
-            DecodingError::InvalidPadding { .. } => "InvalidPadding",
-            DecodingError::VersionNotRecognized(_) => "VersionNotRecognized",
-            DecodingError::MixedCase => "MixedCase",
-        };
-        let _e = cx.throw_error::<&str, JsError>(error_msg);
-        return Err(Throw);
-    }
-    let decoded = decode_res.unwrap();
-    if decoded.hex_address.is_none() {
-        let _e = cx.throw_error::<&str, JsError>("Decode failed");
-        return Err(Throw);
-    }
+#[napi(object)]
+pub struct DecodeResult {
+  pub hexAddress: String,
+  pub netId: u32,
+  pub r#type: String,
+}
 
-    let net_id = match decoded.network {
-        Network::Main => MAIN,
-        Network::Test => TEST,
+#[napi]
+fn decode(base32_address: String) -> Result<DecodeResult, napi::Error> {
+  let decode_res = cfx_addr_decode(&base32_address);
+
+  match decode_res {
+    Ok(decode_raw_address) => {
+      let net_id: u32 = match decode_raw_address.network {
+        Network::Main => MAIN_NET_ID,
+        Network::Test => TEST_NET_ID,
         Network::Id(id) => id as u32,
-    };
+      };
 
-    let address_type = if decoded.hex_address.unwrap().is_zero() {
+      let hex_address = decode_raw_address.hex_address.unwrap();
+
+      let address_type = if hex_address.is_zero() {
         "null"
-    } else {
-        match decoded.parsed_address_bytes[0] & 0xf0 {
-            0x00 => "builtin",
-            0x80 => "contract",
-            0x10 => "user",
-            _ => "invalid",
+      } else {
+        match decode_raw_address.parsed_address_bytes[0] & 0xf0 {
+          0x00 => "builtin",
+          0x80 => "contract",
+          0x10 => "user",
+          _ => "invalid",
         }
-    };
+      };
 
-    let obj = cx.empty_object();
-    let hex_address_handle = JsBuffer::external(&mut cx, decoded.parsed_address_bytes);
-    let net_id_handle = cx.number(net_id);
-    let address_type_handle = cx.string(address_type);
-    obj.set(&mut cx, "hexAddress", hex_address_handle)?;
-    obj.set(&mut cx, "netId", net_id_handle)?;
-    obj.set(&mut cx, "type", address_type_handle)?;
+      Ok(DecodeResult {
+        hexAddress: format!("0x{}", hex_address),
+        netId: net_id,
+        r#type: address_type.to_string(),
+      })
+    }
+    Err(err) => {
+      let error_msg = match err {
+        DecodingError::ChecksumFailed { .. } => "invalid checksum",
+        DecodingError::InvalidChar(_) => "invalid char",
+        DecodingError::InvalidLength(_) => "invalid length",
+        DecodingError::InvalidOption(option_error) => match option_error {
+          OptionError::AddressTypeMismatch { .. } => {
+            "decoded address does not match address type in option"
+          }
+          OptionError::ParseError(_) => "invalid option",
+          OptionError::InvalidAddressType(_) => "invalid address type",
+        },
+        DecodingError::InvalidPadding { .. } => "invalid padding",
+        DecodingError::InvalidPrefix(_) => "invalid prefix",
+        DecodingError::NoPrefix => "zero or multiple prefixes",
+        DecodingError::MixedCase => "mixed case string",
+        DecodingError::VersionNotRecognized(_) => "version byte not recognized",
+      };
 
-    Ok(obj)
-}
-
-#[neon::main]
-fn main(mut cx: ModuleContext) -> NeonResult<()> {
-    cx.export_function("encode", encode)?;
-    cx.export_function("decode", decode)?;
-    Ok(())
+      Err(Error::from_reason(format!("Error: decode error {}", error_msg)))
+    }
+  }
 }

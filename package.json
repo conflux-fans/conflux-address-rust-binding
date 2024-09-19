@@ -1,21 +1,46 @@
 {
   "name": "@conflux-dev/conflux-address-rust",
   "version": "0.1.6",
-  "description": "This is the Node.js binding to conflux-address-rust",
-  "main": "index.node",
-  "scripts": {
-    "build": "cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics",
-    "build-debug": "npm run build --",
-    "build-release": "npm run build -- --release",
-    "install": "npm run build-release",
-    "test": "cargo test"
+  "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "name": "conflux-address-rust",
+    "triples": {
+      "additional": [
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-gnu"
+      ]
+    }
   },
-  "author": "Pana.W",
   "license": "MIT",
-  "dependencies": {
-    "cargo-cp-artifact": "^0.1"
-  },
   "devDependencies": {
-    
+    "@changesets/cli": "^2.27.8",
+    "@napi-rs/cli": "^2.18.4",
+    "add": "^2.0.6",
+    "vitest": "^2.1.1"
+  },
+  "ava": {
+    "timeout": "3m"
+  },
+  "engines": {
+    "node": ">= 10"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "vitest run",
+    "universal": "napi universal",
+    "version": "napi version"
+  },
+  "packageManager": "yarn@4.5.0",
+  "workspaces": [
+    "npm/*",
+    "."
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
