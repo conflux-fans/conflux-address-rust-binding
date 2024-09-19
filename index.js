@@ -310,7 +310,9 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { encode, decode } = nativeBinding
+const { MAIN_NET_ID, TEST_NET_ID, encode, decode } = nativeBinding
 
+module.exports.MAIN_NET_ID = MAIN_NET_ID
+module.exports.TEST_NET_ID = TEST_NET_ID
 module.exports.encode = encode
 module.exports.decode = decode

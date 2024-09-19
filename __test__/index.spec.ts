@@ -11,9 +11,8 @@ describe("decode", () => {
         }
       `);
 
-    expect(
-      decode("CFX:ACC7UAWF5UBTNMEZVHU9DHC6SGHEA0403Y2DGPYFJP")
-    ).toMatchInlineSnapshot(`
+    expect(decode("CFX:ACC7UAWF5UBTNMEZVHU9DHC6SGHEA0403Y2DGPYFJP"))
+      .toMatchInlineSnapshot(`
       {
         "hexAddress": "0x0x85d8…56cd",
         "netId": 1029,
@@ -43,18 +42,16 @@ describe("decode", () => {
       }
     `);
 
-    expect(
-      decode("cfx:aarc9abycue0hhzgyrr53m6cxedgccrmmyybjgh4xg")
-    ).toMatchInlineSnapshot(`
+    expect(decode("cfx:aarc9abycue0hhzgyrr53m6cxedgccrmmyybjgh4xg"))
+      .toMatchInlineSnapshot(`
       {
         "hexAddress": "0x0x1a2f…aa55",
         "netId": 1029,
         "type": "user",
       }
     `);
-    expect(
-      decode("cfxtest:aan6jzja3gkvas5tm1j9uc623fj85j45hu6ec5g92p")
-    ).toMatchInlineSnapshot(`
+    expect(decode("cfxtest:aan6jzja3gkvas5tm1j9uc623fj85j45hu6ec5g92p"))
+      .toMatchInlineSnapshot(`
       {
         "hexAddress": "0x0x17c4…5b3c",
         "netId": 1,
@@ -72,23 +69,41 @@ describe("decode", () => {
       }
     `);
 
-    expect(
-      decode("net10086:aaag4wt2mbmbb44sp6szd783ry0jtad5benr1ap5gp")
-    ).toMatchInlineSnapshot(`
+    expect(decode("net10086:aaag4wt2mbmbb44sp6szd783ry0jtad5benr1ap5gp"))
+      .toMatchInlineSnapshot(`
       {
         "hexAddress": "0x0x006d…7b09",
         "netId": 10086,
         "type": "builtin",
       }
     `);
-    expect(
-      decode("net7876:aamue88kha4th1am7t3uvt94kr18t02xhac258u0wc")
-    ).toMatchInlineSnapshot(`
+    expect(decode("net7876:aamue88kha4th1am7t3uvt94kr18t02xhac258u0wc"))
+      .toMatchInlineSnapshot(`
       {
         "hexAddress": "0x0x1502…1338",
         "netId": 7876,
         "type": "user",
       }
     `);
+  });
+
+  test("invalid", () => {
+    expect(() => decode("cfx:")).toThrow("decode error: invalid length");
+
+    expect(() => decode("acc7uawf5ubtnmezvhu9dhc6sghea0403y2dgpyfjp")).toThrow(
+      "decode error: zero or multiple prefixes"
+    );
+
+    expect(() =>
+      decode("abc:aamue88kha4th1am7t3uvt94kr18t02xhac258u0wc")
+    ).toThrow("decode error: invalid prefix");
+
+    expect(() =>
+      decode("cfx:aamue88kha4th1am7t3uvt94kr18t02xhac258u0wc")
+    ).toThrow("decode error: invalid checksum");
+
+    expect(() =>
+      expect(decode("net7876:Aamue88kha4th1am7t3uvt94kr18t02xhac258u0wc"))
+    ).toThrow("decode error: mixed case string");
   });
 });
