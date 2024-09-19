@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { decode } from "../index.js";
+import { decode, encode } from "../index.js";
 describe("decode", () => {
   test("default", () => {
     expect(decode("cfx:acc7uawf5ubtnmezvhu9dhc6sghea0403y2dgpyfjp"))
@@ -88,22 +88,53 @@ describe("decode", () => {
   });
 
   test("invalid", () => {
-    expect(() => decode("cfx:")).toThrow("decode error: invalid length");
+    expect(() => decode("cfx:")).toThrow("Error: decode error invalid length");
 
     expect(() => decode("acc7uawf5ubtnmezvhu9dhc6sghea0403y2dgpyfjp")).toThrow(
-      "decode error: zero or multiple prefixes"
+      "Error: decode error zero or multiple prefixes"
     );
 
     expect(() =>
       decode("abc:aamue88kha4th1am7t3uvt94kr18t02xhac258u0wc")
-    ).toThrow("decode error: invalid prefix");
+    ).toThrow("Error: decode error invalid prefix");
 
     expect(() =>
       decode("cfx:aamue88kha4th1am7t3uvt94kr18t02xhac258u0wc")
-    ).toThrow("decode error: invalid checksum");
+    ).toThrow("Error: decode error invalid checksum");
 
     expect(() =>
       expect(decode("net7876:Aamue88kha4th1am7t3uvt94kr18t02xhac258u0wc"))
-    ).toThrow("decode error: mixed case string");
+    ).toThrow("Error: decode error mixed case string");
+  });
+});
+
+describe("encode", () => {
+  test("default", () => {
+    expect(
+      encode("85d80245dc02f5a89589e1f19c5c718e405b56cd", 1029, false)
+    ).toBe("cfx:acc7uawf5ubtnmezvhu9dhc6sghea0403y2dgpyfjp");
+    expect(encode("85d80245dc02f5a89589e1f19c5c718e405b56cd", 1029, true)).toBe(
+      "CFX:TYPE.CONTRACT:ACC7UAWF5UBTNMEZVHU9DHC6SGHEA0403Y2DGPYFJP"
+    );
+
+    expect(encode("0x85d80245dc02f5a89589e1f19c5c718e405b56cd", 1, false)).toBe(
+      "cfxtest:acc7uawf5ubtnmezvhu9dhc6sghea0403ywjz6wtpg"
+    );
+    expect(encode("85d80245dc02f5a89589e1f19c5c718e405b56cd", 1, true)).toBe(
+      "CFXTEST:TYPE.CONTRACT:ACC7UAWF5UBTNMEZVHU9DHC6SGHEA0403YWJZ6WTPG"
+    );
+
+    expect(
+      encode("85d80245dc02f5a89589e1f19c5c718e405b56cd", 1111, false)
+    ).toBe("net1111:acc7uawf5ubtnmezvhu9dhc6sghea0403y11xjpva5");
+    expect(
+      encode("0x85d80245dc02f5a89589e1f19c5c718e405b56cd", 1111, true)
+    ).toBe("NET1111:TYPE.CONTRACT:ACC7UAWF5UBTNMEZVHU9DHC6SGHEA0403Y11XJPVA5");
+  });
+
+  test("invalid", () => {
+    expect(() =>
+      encode("85d80245dc02f5a89589e1f19c5c718e405b", 1029, false)
+    ).toThrow("Error: encode error: invalid length");
   });
 });
