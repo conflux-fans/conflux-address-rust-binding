@@ -3,7 +3,11 @@
 #[macro_use]
 extern crate napi_derive;
 
-use cfx_addr::{self, cfx_addr_decode, errors::OptionError, DecodingError, Network};
+use cfx_addr::{
+  self, cfx_addr_decode, cfx_addr_encode,
+  errors::{EncodingError, OptionError},
+  DecodingError, EncodingOptions, Network,
+};
 use napi::Error;
 
 #[napi]
@@ -12,7 +16,37 @@ pub const MAIN_NET_ID: u32 = 1029;
 pub const TEST_NET_ID: u32 = 1;
 
 #[napi]
-fn encode(addr: String) {}
+fn encode(hex_address: String, net_id: u32, verbose: bool) -> Result<String, napi::Error> {
+  let network_id = match net_id {
+    MAIN_NET_ID => Network::Main,
+    TEST_NET_ID => Network::Test,
+    _ => Network::Id(net_id as u64),
+  };
+
+  let hex_str = hex_address.as_str().trim_start_matches("0x");
+
+  let encoding_options = if verbose {
+    EncodingOptions::QrCode
+  } else {
+    EncodingOptions::Simple
+  };
+
+  let raw_addr =
+    hex::decode(hex_str).map_err(|_| Error::from_reason("Error: encode error: invalid hex string"))?;
+
+  let base32_address =
+    cfx_addr_encode(&raw_addr, network_id, encoding_options).map_err(|e| match e {
+      EncodingError::InvalidLength(_) => Error::from_reason("Error: encode error: invalid length"),
+      EncodingError::InvalidAddressType(_) => {
+        Error::from_reason("Error: encode error: invalid address type")
+      }
+      EncodingError::InvalidNetworkId(id) => {
+        Error::from_reason(format!("Error: encode error: invalid network id: {}", id))
+      }
+    })?;
+
+  Ok(base32_address)
+}
 
 #[napi(object)]
 pub struct DecodeResult {
@@ -71,7 +105,7 @@ fn decode(base32_address: String) -> Result<DecodeResult, napi::Error> {
         DecodingError::VersionNotRecognized(_) => "version byte not recognized",
       };
 
-      Err(Error::from_reason(format!("decode error: {}", error_msg)))
+      Err(Error::from_reason(format!("Error: decode error {}", error_msg)))
     }
   }
 }
