@@ -250,6 +250,36 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@conflux-dev/conflux-address-rust-darwin-arm64@workspace:npm/darwin-arm64":
+  version: 0.0.0-use.local
+  resolution: "@conflux-dev/conflux-address-rust-darwin-arm64@workspace:npm/darwin-arm64"
+  languageName: unknown
+  linkType: soft
+
+"@conflux-dev/conflux-address-rust-darwin-x64@workspace:npm/darwin-x64":
+  version: 0.0.0-use.local
+  resolution: "@conflux-dev/conflux-address-rust-darwin-x64@workspace:npm/darwin-x64"
+  languageName: unknown
+  linkType: soft
+
+"@conflux-dev/conflux-address-rust-linux-arm64-gnu@workspace:npm/linux-arm64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@conflux-dev/conflux-address-rust-linux-arm64-gnu@workspace:npm/linux-arm64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@conflux-dev/conflux-address-rust-linux-x64-gnu@workspace:npm/linux-x64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@conflux-dev/conflux-address-rust-linux-x64-gnu@workspace:npm/linux-x64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@conflux-dev/conflux-address-rust-win32-x64-msvc@workspace:npm/win32-x64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@conflux-dev/conflux-address-rust-win32-x64-msvc@workspace:npm/win32-x64-msvc"
+  languageName: unknown
+  linkType: soft
+
 "@conflux-dev/conflux-address-rust@workspace:.":
   version: 0.0.0-use.local
   resolution: "@conflux-dev/conflux-address-rust@workspace:."
