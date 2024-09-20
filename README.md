@@ -70,32 +70,29 @@ encode('0x1386b4185a223ef49592233b69291bbe5a80c527', 1029, true)
 
 In the project directory, you can run:
 
-### `npm install`
+### `yarn install`
 
-Installs the project, including running `npm run build`.
+Installs the project, including running `yarn build`.
 
-### `npm build`
+### `yarn build`
 
-Builds the Node addon (`index.node`) from source.
+After yarn build/npm run build command, you can see package-template.[darwin|win32|linux].node file in project root. This is the native addon built from [lib.rs](/src/lib.rs).
 
-This command uses the [cargo-cp-artifact](https://github.com/neon-bindings/cargo-cp-artifact) utility to run the Rust build and copy the built library into `./index.node`.
 
-Additional [`cargo build`](https://doc.rust-lang.org/cargo/commands/cargo-build.html) arguments may be passed to `npm build` and `npm build-*` commands. For example, to enable a [cargo feature](https://doc.rust-lang.org/cargo/reference/features.html):
+### Test in local
 
+- yarn
+- yarn build
+- yarn test
+
+And you will see:
+
+```bash
+ ✓ __test__/index.spec.ts (4)
+   ✓ decode (2)
+     ✓ default
+     ✓ invalid
+   ✓ encode (2)
+     ✓ default
+     ✓ invalid
 ```
-npm run build -- --feature=beetle
-```
-
-#### `npm build-debug`
-
-Alias for `npm build`.
-
-#### `npm build-release`
-
-Same as [`npm build`](#npm-build) but, builds the module with the [`release`](https://doc.rust-lang.org/cargo/reference/profiles.html#release) profile. Release builds will compile slower, but run faster.
-
-### `npm test`
-
-Runs the unit tests by calling `cargo test`. You can learn more about [adding tests to your Rust code](https://doc.rust-lang.org/book/ch11-01-writing-tests.html) from the [Rust book](https://doc.rust-lang.org/book/).
-
-
