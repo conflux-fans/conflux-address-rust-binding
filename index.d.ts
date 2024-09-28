@@ -7,7 +7,7 @@ export const MAIN_NET_ID: number
 export const TEST_NET_ID: number
 export declare function encode(hexAddress: string, netId: number, verbose: boolean): string
 export interface DecodeResult {
-  hexAddress: string
+  hexAddress: Buffer
   netId: number
   type: string
 }

@@ -8,7 +8,7 @@ use cfx_addr::{
   errors::{EncodingError, OptionError},
   DecodingError, EncodingOptions, Network,
 };
-use napi::Error;
+use napi::{bindgen_prelude::Buffer, Error};
 
 #[napi]
 pub const MAIN_NET_ID: u32 = 1029;
@@ -50,7 +50,7 @@ fn encode(hex_address: String, net_id: u32, verbose: bool) -> Result<String, nap
 
 #[napi(object)]
 pub struct DecodeResult {
-  pub hexAddress: String,
+  pub hexAddress: Buffer,
   pub netId: u32,
   pub r#type: String,
 }
@@ -81,7 +81,7 @@ fn decode(base32_address: String) -> Result<DecodeResult, napi::Error> {
       };
 
       Ok(DecodeResult {
-        hexAddress: format!("0x{}", hex_address),
+        hexAddress: decode_raw_address.parsed_address_bytes.into(),
         netId: net_id,
         r#type: address_type.to_string(),
       })
