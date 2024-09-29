@@ -1,6 +1,6 @@
 {
   "name": "@conflux-dev/conflux-address-rust-darwin-arm64",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "os": [
     "darwin"
   ],
